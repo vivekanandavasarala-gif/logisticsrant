@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LogistiRant - Professional Logistics Rant Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .message-bubble {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .channel-item:hover {
+            background-color: #f3f4f6;
+        }
+        .active-channel {
+            background-color: #e5e7eb;
+            border-right: 3px solid #374151;
+        }
+        .filtered-word {
+            background-color: #000;
+            color: #000;
+            padding: 0 4px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="bg-white text-black h-screen flex">
+    
+    <!-- Sidebar -->
+    <div class="w-64 bg-gray-100 border-r border-gray-300 flex flex-col">
+        <!-- Header -->
+        <div class="p-4 border-b border-gray-300">
+            <h1 class="text-xl font-bold text-gray-800">
+                <i class="fas fa-truck mr-2"></i>LogistiRant
+            </h1>
+            <p class="text-xs text-gray-600 mt-1">Professional Logistics Venting</p>
+        </div>
+        
+        <!-- Channels -->
+        <div class="flex-1 overflow-y-auto">
+            <div class="p-3">
+                <h3 class="text-sm font-semibold text-gray-700 mb-2">CHANNELS</h3>
+                <div class="space-y-1">
+                    <div class="channel-item active-channel p-2 rounded cursor-pointer text-sm" data-channel="shipping-delays">
+                        <i class="fas fa-hashtag mr-2 text-gray-600"></i>shipping-delays
+                    </div>
+                    <div class="channel-item p-2 rounded cursor-pointer text-sm" data-channel="supplier-issues">
+                        <i class="fas fa-hashtag mr-2 text-gray-600"></i>supplier-issues
+                    </div>
+                    <div class="channel-item p-2 rounded cursor-pointer text-sm" data-channel="warehouse-chaos">
+                        <i class="fas fa-hashtag mr-2 text-gray-600"></i>warehouse-chaos
+                    </div>
+                    <div class="channel-item p-2 rounded cursor-pointer text-sm" data-channel="freight-nightmares">
+                        <i class="fas fa-hashtag mr-2 text-gray-600"></i>freight-nightmares
+                    </div>
+                    <div class="channel-item p-2 rounded cursor-pointer text-sm" data-channel="customs-hell">
+                        <i class="fas fa-hashtag mr-2 text-gray-600"></i>customs-hell
+                    </div>
+                    <div class="channel-item p-2 rounded cursor-pointer text-sm" data-channel="inventory-madness">
+                        <i class="fas fa-hashtag mr-2 text-gray-600"></i>inventory-madness
+                    </div>
+                    <div class="channel-item p-2 rounded cursor-pointer text-sm" data-channel="driver-drama">
+                        <i class="fas fa-hashtag mr-2 text-gray-600"></i>driver-drama
+                    </div>
+                    <div class="channel-item p-2 rounded cursor-pointer text-sm" data-channel="client-complaints">
+                        <i class="fas fa-hashtag mr-2 text-gray-600"></i>client-complaints
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- User Info -->
+        <div class="p-3 border-t border-gray-300">
+            <div class="flex items-center">
+                <div class="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                    U
+                </div>
+                <div class="ml-2">
+                    <div class="text-sm font-medium">User</div>
+                    <div class="text-xs text-gray-600">Logistics Professional</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col">
+        <!-- Chat Header -->
+        <div class="bg-white border-b border-gray-300 p-4 flex items-center">
+            <i class="fas fa-hashtag mr-2 text-gray-600"></i>
+            <span class="font-semibold" id="current-channel">shipping-delays</span>
+            <span class="ml-2 text-gray-600 text-sm" id="channel-description">Vent about shipping and delivery delays</span>
+        </div>
+        
+        <!-- Messages Area -->
+        <div class="flex-1 overflow-y-auto p-4" id="messages-container">
+            <div class="space-y-4" id="messages">
+                <!-- Messages will be populated here -->
+            </div>
+        </div>
+        
+        <!-- Message Input -->
+        <div class="border-t border-gray-300 p-4">
+            <div class="flex items-center">
+                <input 
+                    type="text" 
+                    placeholder="Share your logistics frustration... (keep it professional)"
+                    class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:border-gray-500"
+                    id="message-input"
+                    maxlength="500"
+                >
+                <button 
+                    class="ml-3 bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
+                    id="send-button"
+                >
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            <div class="text-xs text-gray-500 mt-2">
+                <i class="fas fa-shield-alt mr-1"></i>
+                Content is automatically filtered for professionalism
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class LogistiRant {
+            constructor() {
+                this.currentChannel = 'shipping-delays';
+                this.messages = {
+                    'shipping-delays': [
+                        { user: 'TruckMaster', time: '2 hours ago', message: 'Another shipment delayed by 3 days! The client is breathing down my neck and I can\'t do anything about port congestion.' },
+                        { user: 'WarehouseWiz', time: '1 hour ago', message: 'Same here! Ocean freight is completely unpredictable. Planning has become a joke.' },
+                        { user: 'LogiPro', time: '45 minutes ago', message: 'Just got notice that our container is stuck in customs for the third week. This is getting ridiculous!' }
+                    ],
+                    'supplier-issues': [
+                        { user: 'SupplyChainSarah', time: '3 hours ago', message: 'Supplier changed delivery date AGAIN without notice. How am I supposed to manage production schedules?' },
+                        { user: 'ProcurementPete', time: '2 hours ago', message: 'Quality control is non-existent with our main supplier. Every shipment is a gamble.' }
+                    ],
+                    'warehouse-chaos': [
+                        { user: 'ForkLiftFred', time: '4 hours ago', message: 'Inventory system crashed during peak season. We\'re basically operating blind right now.' },
+                        { user: 'StockManager', time: '1 hour ago', message: 'Someone mixed up SKUs again. Spent all morning fixing a 500-unit discrepancy.' }
+                    ],
+                    'freight-nightmares': [
+                        { user: 'FreightForwarder', time: '5 hours ago', message: 'Carrier lost our shipment. Actually LOST it. How do you lose a 40ft container?!' },
+                        { user: 'ShippingShane', time: '3 hours ago', message: 'Freight costs doubled overnight. Budget is completely blown for this quarter.' }
+                    ],
+                    'customs-hell': [
+                        { user: 'CustomsCrusader', time: '6 hours ago', message: 'Paperwork rejected for the tiniest formatting error. Starting the whole process over.' },
+                        { user: 'ImportExpert', time: '2 hours ago', message: 'Tariff classifications changed mid-shipment. Additional fees came out of nowhere.' }
+                    ],
+                    'inventory-madness': [
+                        { user: 'CountingCarl', time: '4 hours ago', message: 'Cycle count revealed 15% discrepancy. Either we have ghosts stealing or our system is completely wrong.' },
+                        { user: 'StockTracker', time: '1 hour ago', message: 'Overstocked on slow movers, understocked on fast movers. Perfect recipe for disaster.' }
+                    ],
+                    'driver-drama': [
+                        { user: 'DispatchDave', time: '3 hours ago', message: 'Driver called in sick 30 minutes before pickup. Scrambling to find replacement.' },
+                        { user: 'FleetManager', time: '2 hours ago', message: 'GPS shows driver took a 2-hour "lunch break" during time-sensitive delivery.' }
+                    ],
+                    'client-complaints': [
+                        { user: 'CustomerService', time: '5 hours ago', message: 'Client wants expedited shipping at standard rates. Magic doesn\'t exist in logistics!' },
+                        { user: 'AccountManager', time: '1 hour ago', message: 'Customer complaining about 1-day delay while ignoring their 2-week late PO confirmation.' }
+                    ]
+                };
+                
+                this.channelDescriptions = {
+                    'shipping-delays': 'Vent about shipping and delivery delays',
+                    'supplier-issues': 'Share supplier-related frustrations',
+                    'warehouse-chaos': 'Warehouse operations nightmares',
+                    'freight-nightmares': 'Freight and carrier disasters',
+                    'customs-hell': 'Customs and regulatory headaches',
+                    'inventory-madness': 'Inventory management fails',
+                    'driver-drama': 'Driver and transportation issues',
+                    'client-complaints': 'Difficult client situations'
+                };
+                
+                this.profanityFilter = [
+                    'damn', 'hell', 'crap', 'stupid', 'idiot', 'moron', 'dumb', 'suck',
+                    'sucks', 'pissed', 'piss', 'screwed', 'screw', 'bullshit', 'bs'
+                ];
+                
+                this.init();
+            }
+            
+            init() {
+                this.bindEvents();
+                this.loadChannel('shipping-delays');
+            }
+            
+            bindEvents() {
+                // Channel switching
+                document.querySelectorAll('.channel-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        const channel = e.currentTarget.dataset.channel;
+                        this.switchChannel(channel);
+                    });
+                });
+                
+                // Send message
+                document.getElementById('send-button').addEventListener('click', () => {
+                    this.sendMessage();
+                });
+                
+                document.getElementById('message-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.sendMessage();
+                    }
+                });
+            }
+            
+            switchChannel(channelName) {
+                // Update active channel styling
+                document.querySelectorAll('.channel-item').forEach(item => {
+                    item.classList.remove('active-channel');
+                });
+                document.querySelector(`[data-channel="${channelName}"]`).classList.add('active-channel');
+                
+                this.currentChannel = channelName;
+                this.loadChannel(channelName);
+            }
+            
+            loadChannel(channelName) {
+                document.getElementById('current-channel').textContent = channelName;
+                document.getElementById('channel-description').textContent = this.channelDescriptions[channelName];
+                
+                const messagesContainer = document.getElementById('messages');
+                messagesContainer.innerHTML = '';
+                
+                const messages = this.messages[channelName] || [];
+                messages.forEach(msg => {
+                    this.displayMessage(msg.user, msg.message, msg.time);
+                });
+                
+                this.scrollToBottom();
+            }
+            
+            sendMessage() {
+                const input = document.getElementById('message-input');
+                const message = input.value.trim();
+                
+                if (message) {
+                    const filteredMessage = this.filterProfanity(message);
+                    const now = new Date();
+                    const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    
+                    // Add to messages array
+                    if (!this.messages[this.currentChannel]) {
+                        this.messages[this.currentChannel] = [];
+                    }
+                    this.messages[this.currentChannel].push({
+                        user: 'You',
+                        message: filteredMessage,
+                        time: timeString
+                    });
+                    
+                    this.displayMessage('You', filteredMessage, timeString);
+                    input.value = '';
+                    this.scrollToBottom();
+                    
+                    // Simulate responses occasionally
+                    if (Math.random() > 0.7) {
+                        setTimeout(() => this.generateAutoResponse(), 2000 + Math.random() * 3000);
+                    }
+                }
+            }
+            
+            filterProfanity(message) {
+                let filtered = message;
+                this.profanityFilter.forEach(word => {
+                    const regex = new RegExp(`\\b${word}\\b`, 'gi');
+                    filtered = filtered.replace(regex, (match) => {
+                        return `<span class="filtered-word">${'*'.repeat(match.length)}</span>`;
+                    });
+                });
+                return filtered;
+            }
+            
+            displayMessage(user, message, time) {
+                const messagesContainer = document.getElementById('messages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message-bubble flex items-start space-x-3';
+                
+                const isCurrentUser = user === 'You';
+                const avatarColor = isCurrentUser ? 'bg-black' : 'bg-gray-400';
+                const userInitial = user.charAt(0).toUpperCase();
+                
+                messageDiv.innerHTML = `
+                    <div class="w-8 h-8 ${avatarColor} rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                        ${userInitial}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-baseline space-x-2">
+                            <span class="font-semibold text-sm">${user}</span>
+                            <span class="text-xs text-gray-500">${time}</span>
+                        </div>
+                        <div class="text-sm text-gray-800 mt-1 break-words">${message}</div>
+                    </div>
+                `;
+                
+                messagesContainer.appendChild(messageDiv);
+            }
+            
+            generateAutoResponse() {
+                const responses = [
+                    "Tell me about it! Same situation here.",
+                    "This industry is getting more challenging every day.",
+                    "I feel your pain. Been there too many times.",
+                    "Totally understand the frustration.",
+                    "At least we're all in this together!",
+                    "Hope it gets better soon. Hang in there!",
+                    "The struggles are real in logistics.",
+                    "Some days I wonder why we chose this field!"
+                ];
+                
+                const users = ['LogiPro', 'FreightMaster', 'SupplyChainExpert', 'WarehousePro', 'ShippingGuru'];
+                const randomUser = users[Math.floor(Math.random() * users.length)];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                const timeString = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                if (!this.messages[this.currentChannel]) {
+                    this.messages[this.currentChannel] = [];
+                }
+                this.messages[this.currentChannel].push({
+                    user: randomUser,
+                    message: randomResponse,
+                    time: timeString
+                });
+                
+                this.displayMessage(randomUser, randomResponse, timeString);
+                this.scrollToBottom();
+            }
+            
+            scrollToBottom() {
+                const container = document.getElementById('messages-container');
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            new LogistiRant();
+        });
+    </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"96d9005b1d051ec2","serverTiming":{"name":{"cfExtPri":true,"cfEdge":true,"cfOrigin":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}},"version":"2025.7.0","token":"4edd5f8ec12a48cfa682ab8261b80a79"}' crossorigin="anonymous"></script>
+</body>
+</html>
+    <script id="html_badge_script1">
+        window.__genspark_remove_badge_link = "https://www.genspark.ai/api/html_badge/" +
+            "remove_badge?token=To%2FBnjzloZ3UfQdcSaYfDmVRMeb3Ev8objQEpBCZtSsCVZ6kdoqht4rDMvkXDm43RvXXVTZcMcYuTDBzBcPELUjWKdT6%2BLXgDFvsw%2B5b%2BKCwYOVe%2F%2FgYkjlWoariXMedc0n42R7Oc77sILNKlrkMeyUz5a5G6GdoJZvvTOzNh4WN5XaPVQrlPQquh931cztRbO2DPhWtnm7WRNYJiOHal%2F6Z%2BwmEAIg5fKZqRI0X48CwnEBW8plhqZ93vePhzV6WnVrsPcjIHBDEXIA2RrvwK4%2F6Bvcmas5%2FrME3o2bNXaygL2e6asIYIQNIhwnY5ALnonAaOf16PHF8IOZefSGMrmC60ey7K5usiCDbTaGFygRvClazm9kQ1RbNUV%2BeeQPngFo7ZaZX2fijdNKVB4wTDMujWnEdUN2a3YKZhf7oIdzx3Dyt4OT5E2P%2Bsw6GdGaolKlhleob1ktRQp0pgm2L9Tqc0v%2FzHiWCle9LYJ%2BP2RqnElbyK4X7HB6dtKx1wUOzMqiLuwc3loilRSvhVH%2BWxw%3D%3D";
+        window.__genspark_locale = "en-US";
+        window.__genspark_token = "To/BnjzloZ3UfQdcSaYfDmVRMeb3Ev8objQEpBCZtSsCVZ6kdoqht4rDMvkXDm43RvXXVTZcMcYuTDBzBcPELUjWKdT6+LXgDFvsw+5b+KCwYOVe//gYkjlWoariXMedc0n42R7Oc77sILNKlrkMeyUz5a5G6GdoJZvvTOzNh4WN5XaPVQrlPQquh931cztRbO2DPhWtnm7WRNYJiOHal/6Z+wmEAIg5fKZqRI0X48CwnEBW8plhqZ93vePhzV6WnVrsPcjIHBDEXIA2RrvwK4/6Bvcmas5/rME3o2bNXaygL2e6asIYIQNIhwnY5ALnonAaOf16PHF8IOZefSGMrmC60ey7K5usiCDbTaGFygRvClazm9kQ1RbNUV+eeQPngFo7ZaZX2fijdNKVB4wTDMujWnEdUN2a3YKZhf7oIdzx3Dyt4OT5E2P+sw6GdGaolKlhleob1ktRQp0pgm2L9Tqc0v/zHiWCle9LYJ+P2RqnElbyK4X7HB6dtKx1wUOzMqiLuwc3loilRSvhVH+Wxw==";
+    </script>
+    
+        <script id="html_badge_script2" src="https://www.genspark.ai/html_badge.js"></script>
+        
+    <script id="html_notice_dialog_script" src="https://www.genspark.ai/notice_dialog.js"></script>
+    
